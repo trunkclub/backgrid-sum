@@ -38,7 +38,7 @@
     }
   });
 
-  window.Backgrid.SummedColumnBody = window.Backgrid.Body.extend({
+  var SummedColumnBody = window.Backgrid.SummedColumnBody = window.Backgrid.Body.extend({
     render: function () {
       window.Backgrid.Body.prototype.render.apply(this, arguments); 
 
