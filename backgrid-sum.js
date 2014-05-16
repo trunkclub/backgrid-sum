@@ -1,7 +1,6 @@
 (function (window) {
   var SummedRow = window.Backgrid.SummedRow = window.Backgrid.Row.extend({
     render: function () {
-      console.log('render');
       this.$el.empty();
 
       var fragment = document.createDocumentFragment();
