@@ -1,27 +1,55 @@
 (function (window) {
+  var SummationUtility = {
+    columnsToSum: [],
+    multiplier: null,
+
+    getColumnsToSum: function () {
+      var columns = this.columns.without(this.columns.findWhere({ name: this.multiplier }));
+      if (_(this.columnsToSum).isEmpty() === false) {
+        columns = columns.filter(function (column) {
+          return this.columnsToSum.indexOf(column.get('name')) !== -1;
+        }, this);
+      }
+      return columns;
+    },
+
+    getSum: function () {
+      return _(this.getColumnsToSum()).reduce(_(this.addColumnValue).bind(this), 0);
+    },
+
+    addColumnValue: function (memo, column) {
+      var value = this.model.get(column.get('name'));
+      var multiplier = 1;
+
+      if (this.multiplier) {
+        if (isNaN(parseFloat(this.multiplier))) {
+          multiplier = this.model.get(this.getColumnByName(this.multiplier).get('name'));
+        } else {
+          multiplier = parseFloat(this.multiplier);
+        }
+      }
+
+      return memo + (parseFloat(value) * multiplier);
+    }
+  };
+
   var SummedRow = window.Backgrid.SummedRow = window.Backgrid.Row.extend({
     render: function () {
       this.$el.empty();
 
       var fragment = document.createDocumentFragment();
-      for (var i = 0; i < this.cells.length; i++) {
-        fragment.appendChild(this.cells[i].render().el);
-      }
+      _(this.cells).each(function (cell) {
+        fragment.appendChild(cell.render().el);
+      });
       fragment.appendChild(this.getSumCell().render().el);
 
       this.el.appendChild(fragment);
-
       this.delegateEvents();
-
       return this;
     },
 
-    getSum: function () {
-      var _this = this;
-      return this.columns.reduce(function (memo, column) {
-        var value = _this.model.get(column.get('name'));
-        return memo + parseFloat(value);
-      }, 0);
+    getColumnByName: function (name) {
+      return this.columns.findWhere({ name: name });
     },
 
     getSumCell: function () {
@@ -41,9 +69,7 @@
   var SummedColumnBody = window.Backgrid.SummedColumnBody = window.Backgrid.Body.extend({
     render: function () {
       window.Backgrid.Body.prototype.render.apply(this, arguments); 
-
       this.el.appendChild(this.getSumRow().render().el);
-
       return this;
     },
 
@@ -53,7 +79,7 @@
         Backbone.View.extend({
           tagName: 'tr',
           render: function () {
-            _this.columns.each(function (column) {
+            _(_this.getColumnsToSum()).each(function (column) {
               var values = _this.collection.pluck(column.get('name'));
               var sum = _.reduce(values, function (memo, num) {
                 return memo + parseFloat(num);
@@ -67,4 +93,7 @@
       );
     }
   });
+
+  _(SummedRow.prototype).extend(SummationUtility);
+  _(SummedColumnBody.prototype).extend(SummationUtility);
 })(window);
