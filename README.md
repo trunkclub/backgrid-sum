@@ -35,8 +35,8 @@ profit
 
 * * *
 
-### Summing columns in a row
-To sum columns in a particular row, you'll want to override the `row` option in `Backgrid.Grid`, like so:
+### Summing the cells of a row
+To sum the cells of a row, you'll want to override the `row` option in `Backgrid.Grid`, like so:
 ```javascript
 var grid = new Backgrid.Grid({
   ...
@@ -45,8 +45,8 @@ var grid = new Backgrid.Grid({
 
 ```
 
-### Summing a column
-To sum columns, you'll want to override the `body` option in `Backgrid.Grid`, like so:
+### Summing the cells of a column
+To sum the cells of a column, you'll want to override the `body` option in `Backgrid.Grid`, like so:
 ```javascript
 var grid = new Backgrid.Grid({
   ...
