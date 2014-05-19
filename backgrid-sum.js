@@ -14,7 +14,7 @@
     },
 
     getSum: function () {
-      return _(this.getColumnsToSum()).reduce(_(this.addColumnValue).bind(this), 0);
+      return _(this.getColumnsToSum()).reduce(this.addColumnValue, 0, this);
     },
 
     addColumnValue: function (memo, column) {
