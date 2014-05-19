@@ -33,6 +33,8 @@ document.body.appendChild(grid.render().el);
 profit
 ```
 
+* * *
+
 ### Summing columns in a row
 To sum columns in a particular row, you'll want to override the `row` option in `Backgrid.Grid`, like so:
 ```javascript
