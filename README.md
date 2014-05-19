@@ -16,8 +16,8 @@ var grid = new Backgrid.Grid({
     { name: 'value', label: 'Value', editable: false, cell: 'string' }
   ],
   collection: col,
-  row: window.Backgrid.SummedRow,
-  body: window.Backgrid.SummedColumnBody
+  row: window.Backgrid.SummedRow.extend({ columnsToSum: ['name', 'value'], multiplier: 'multiplier' }),
+  body: window.Backgrid.SummedColumnBody.extend({ columnsToSum: ['name', 'value'] })
 });
 
 document.body.appendChild(grid.render().el);
@@ -32,3 +32,29 @@ document.body.appendChild(grid.render().el);
 ```
 profit
 ```
+
+### Summing columns in a row
+To sum columns in a particular row, you'll want to override the `row` option in `Backgrid.Grid`, like so:
+```javascript
+var grid = new Backgrid.Grid({
+  ...
+  row: window.Backgrid.SummedRow.extend({ columnsToSum: ['name', 'value'], multiplier: 'multiplier' })
+});
+
+```
+
+### Summing a column
+To sum columns, you'll want to override the `body` option in `Backgrid.Grid`, like so:
+```javascript
+var grid = new Backgrid.Grid({
+  ...
+  body: window.Backgrid.SummedColumnBody.extend({ columnsToSum: ['name', 'value'] })
+});
+
+```
+
+### Parameters
+#### columnsToSum
+`columnsToSum` is optional. If omitted, all columns will be summed.
+#### multiplier
+`multiplier` is optional. It can be a `Number`, or it can be a `String` representing the `name` of the column.
