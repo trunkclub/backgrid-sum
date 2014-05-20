@@ -34,6 +34,8 @@
   };
 
   var SummedRow = window.Backgrid.SummedRow = window.Backgrid.Row.extend({
+    formatter: Backgrid.StringFormatter,
+
     render: function () {
       this.$el.empty();
 
@@ -59,7 +61,7 @@
           className: _this.className || '',
           initialize: function () { },
           render: function () {
-            this.$el.html(_this.getSum());
+            this.$el.html(new _this.formatter().fromRaw(_this.getSum(), _this.model));
             return this;
           }
         })
@@ -68,6 +70,8 @@
   });
 
   var SummedColumnBody = window.Backgrid.SummedColumnBody = window.Backgrid.Body.extend({
+    formatter: Backgrid.StringFormatter,
+
     render: function () {
       window.Backgrid.Body.prototype.render.apply(this, arguments); 
       this.el.appendChild(this.getSumRow().render().el);
@@ -86,6 +90,7 @@
               var sum = _.reduce(values, function (memo, num) {
                 return memo + parseFloat(num);
               }, 0);
+              sum = new _this.formatter().fromRaw(sum, _this.model);
               this.$el.append('<td class="' + (_this.className || '') + '">' + sum + '</td>');
             }, this);
 
