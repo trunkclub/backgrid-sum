@@ -56,6 +56,7 @@
       var _this = this;
       return new (
         Backgrid.Cell.extend({
+          className: _this.className || '',
           initialize: function () { },
           render: function () {
             this.$el.html(_this.getSum());
@@ -77,6 +78,7 @@
       var _this = this;
       return new (
         Backbone.View.extend({
+          className: _this.className || '',
           tagName: 'tr',
           render: function () {
             _(_this.getColumnsToSum()).each(function (column) {
@@ -84,8 +86,8 @@
               var sum = _.reduce(values, function (memo, num) {
                 return memo + parseFloat(num);
               }, 0);
-              _this.$el.append('<td>' + sum + '</td>');
-            });
+              this.$el.append('<td class="' + (_this.className || '') + '">' + sum + '</td>');
+            }, this);
 
             return this;
           }
