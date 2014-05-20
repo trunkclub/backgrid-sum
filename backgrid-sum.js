@@ -78,6 +78,14 @@
       return this;
     },
 
+    getFormatterForColumn: function (column) {
+      if (this.formatters && this.formatters[column.get('name')]) {
+        return new this.formatters[column.get('name')]();
+      } else {
+        return new window.Backgrid.StringFormatter();
+      }
+    },
+
     getSumRow: function () {
       var _this = this;
       return new (
@@ -90,7 +98,7 @@
               var sum = _.reduce(values, function (memo, num) {
                 return memo + parseFloat(num);
               }, 0);
-              sum = new _this.formatter().fromRaw(sum, _this.model);
+              sum = _this.getFormatterForColumn(column).fromRaw(sum, _this.model);
               this.$el.append('<td class="' + (_this.className || '') + '">' + sum + '</td>');
             }, this);
 
