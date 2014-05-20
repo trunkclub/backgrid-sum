@@ -71,6 +71,7 @@
 
   var SummedColumnBody = window.Backgrid.SummedColumnBody = window.Backgrid.Body.extend({
     formatter: Backgrid.StringFormatter,
+    template: _.template('<td class="<%= className %>"><%= sum %></td>'),
 
     render: function () {
       window.Backgrid.Body.prototype.render.apply(this, arguments); 
@@ -94,12 +95,15 @@
           tagName: 'tr',
           render: function () {
             _(_this.getColumnsToSum()).each(function (column) {
-              var values = _this.collection.pluck(column.get('name'));
-              var sum = _.reduce(values, function (memo, num) {
-                return memo + parseFloat(num);
-              }, 0);
-              sum = _this.getFormatterForColumn(column).fromRaw(sum, _this.model);
-              this.$el.append('<td class="' + (_this.className || '') + '">' + sum + '</td>');
+              var sum = '';
+              if (_this.columnsToIgnore.indexOf(column.get('name')) === -1) {
+                var values = _this.collection.pluck(column.get('name'));
+                var sum = _.reduce(values, function (memo, num) {
+                  return memo + parseFloat(num);
+                }, 0);
+                sum = _this.getFormatterForColumn(column).fromRaw(sum, _this.model);
+              }
+              this.$el.append(_this.template({ className: _this.className, sum: sum }));
             }, this);
 
             return this;
