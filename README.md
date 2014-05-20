@@ -1,4 +1,4 @@
-backgrid-sum (v0.1.1)
+backgrid-sum (v0.1.2)
 ============
 
 #### Step 1)
@@ -62,7 +62,7 @@ var grid = new Backgrid.Grid({
 `multiplier` is optional. It can be a `Number`, or it can be a `String` representing the `name` of the column.
 
 ### Installing with bower
-Add `"backgrid-sum": "~0.1.1"` to the `dependencies` section of your `bower.json`.
+Add `"backgrid-sum": "~0.1.2"` to the `dependencies` section of your `bower.json`.
 
 #### Using lodash instead of underscore
 If you're using lodash, just override the dependencies in your `bower.json`:
