@@ -75,7 +75,7 @@
 
     initialize: function () {
       Backgrid.Body.prototype.initialize.apply(this, arguments);
-      this.listenTo(this.collection, 'change', this.render);
+      this.listenTo(this.collection, 'change add remove reset', this.render);
     },
 
     render: function () {
