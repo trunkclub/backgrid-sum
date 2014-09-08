@@ -103,7 +103,6 @@
             _this.columns.forEach(_.bind(function (column) {
               var sum = '';
               if (_this.columnsToSum.indexOf(column.get('name')) !== -1) {
-				  console.log(column.get('name'));
                 var values = _this.collection.pluck(column.get('name'));
                 sum = _.reduce(values, function (memo, num) {
                   return memo + parseFloat(num);
