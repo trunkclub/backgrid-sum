@@ -65,7 +65,7 @@
             return this;
           }
         })
-      );
+      )();
     }
   });
 
@@ -100,22 +100,23 @@
           className: _this.className || '',
           tagName: 'tr',
           render: function () {
-            _(_this.getColumnsToSum()).each(function (column) {
+            _this.columns.forEach(_.bind(function (column) {
               var sum = '';
-              if (_this.columnsToIgnore.indexOf(column.get('name')) === -1) {
+              if (_this.columnsToSum.indexOf(column.get('name')) !== -1) {
+				  console.log(column.get('name'));
                 var values = _this.collection.pluck(column.get('name'));
-                var sum = _.reduce(values, function (memo, num) {
+                sum = _.reduce(values, function (memo, num) {
                   return memo + parseFloat(num);
                 }, 0);
                 sum = _this.getFormatterForColumn(column).fromRaw(sum, _this.model);
               }
               this.$el.append(_this.template({ className: _this.className, sum: sum }));
-            }, this);
+            }, this));
 
             return this;
           }
         })
-      );
+      )();
     }
   });
 
