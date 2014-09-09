@@ -72,6 +72,7 @@
   var SummedColumnBody = window.Backgrid.SummedColumnBody = window.Backgrid.Body.extend({
     formatter: Backgrid.StringFormatter,
     template: _.template('<td class="<%= className %>"><%= sum %></td>'),
+	prepend: false,
 
     initialize: function () {
       Backgrid.Body.prototype.initialize.apply(this, arguments);
@@ -81,7 +82,11 @@
 
     render: function () {
       window.Backgrid.Body.prototype.render.apply(this, arguments);
-      this.el.appendChild(this.getSumRow().render().el);
+	  if (this.prepend) {
+		  this.$el.prepend(this.getSumRow().render().el);
+	  } else {
+		  this.el.appendChild(this.getSumRow().render().el);
+	  }
       return this;
     },
 
