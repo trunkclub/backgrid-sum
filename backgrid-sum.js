@@ -1,129 +1,105 @@
 (function (window) {
-  var SummationUtility = {
-    columnsToSum: [],
-    multiplier: null,
 
-    getColumnsToSum: function () {
-      var columns = this.columns.without(this.columns.findWhere({ name: this.multiplier }));
-      if (_(this.columnsToSum).isEmpty() === false) {
-        columns = columns.filter(function (column) {
-          return this.columnsToSum.indexOf(column.get('name')) !== -1;
-        }, this);
-      }
-      return columns;
-    },
+	var SummedColumnBody = window.Backgrid.SummedColumnBody = window.Backgrid.Body.extend({
+		formatter: Backgrid.StringFormatter,
+		template: _.template('<td class="<%= className %>"><div class="summary"><%= sum %></div><div class="summary-label"><%= label %></div></td>'),
 
-    getSum: function () {
-      return _(this.getColumnsToSum()).reduce(this.addColumnValue, 0, this);
-    },
+		prepend: false,
+		columnNames: [],
 
-    addColumnValue: function (memo, column) {
-      var value = this.model.get(column.get('name'));
-      var multiplier = 1;
+		initialize: function () {
+			Backgrid.Body.prototype.initialize.apply(this, arguments);
 
-      if (this.multiplier) {
-        if (isNaN(parseFloat(this.multiplier))) {
-          multiplier = this.model.get(this.getColumnByName(this.multiplier).get('name'));
-        } else {
-          multiplier = parseFloat(this.multiplier);
-        }
-      }
+			this.columnNames = _.keys(this.columnOptions);
+			this.listenTo(this.collection, 'change add remove reset', this.render);
+			this.listenTo(this.columns, 'change add remove reset', this.render);
+		},
 
-      return memo + (parseFloat(value) * multiplier);
-    }
-  };
+		render: function () {
+			window.Backgrid.Body.prototype.render.apply(this, arguments);
+			if (this.prepend) {
+				this.$el.prepend(this.getSumRow().render().el);
+			} else {
+				this.el.appendChild(this.getSumRow().render().el);
+			}
+			return this;
+		},
 
-  var SummedRow = window.Backgrid.SummedRow = window.Backgrid.Row.extend({
-    formatter: Backgrid.StringFormatter,
+		getFormatterForColumn: function (column) {
+			if (this.formatters && this.formatters[column.get('name')]) {
+				return new this.formatters[column.get('name')]();
+			} else {
+				return new window.Backgrid.StringFormatter();
+			}
+		},
 
-    render: function () {
-      this.$el.empty();
+		getColumnsToSum: function () {
+			var columns = this.columns.without(this.columns.findWhere({ name: this.multiplier }));
+			if (_(this.columnNames).isEmpty() === false) {
+				columns = columns.filter(function (column) {
+					return this.columnNames.indexOf(column.get('name')) !== -1;
+				}, this);
+			}
+			return columns;
+		},
 
-      var fragment = document.createDocumentFragment();
-      _(this.cells).each(function (cell) {
-        fragment.appendChild(cell.render().el);
-      });
-      fragment.appendChild(this.getSumCell().render().el);
+		getSumRow: function () {
+			var self = this;
+			return new (
+				Backbone.View.extend({
+					className: self.className || '',
+					tagName: 'tr',
+					render: function () {
+						self.columns.forEach(_.bind(function (column) {
+							var columnName = column.get('name');
+							var sum = '';
+							if (self.columnNames.indexOf(columnName) !== -1) {
+								sum = self.aggregate(columnName);
+								sum = self.getFormatterForColumn(column).fromRaw(sum, self.model);
+							}
+							var label = self.columnOptions[columnName] ? 
+								self.columnOptions[columnName].label : '';
+							this.$el.append(self.template({
+								className: this.className, 
+								sum: sum,
+								label: label
+							}));
+						}, this));
 
-      this.el.appendChild(fragment);
-      this.delegateEvents();
-      return this;
-    },
+						return this;
+					}
+				})
+			)();
+		},
 
-    getColumnByName: function (name) {
-      return this.columns.findWhere({ name: name });
-    },
+		aggregate: function (columnName) {
+			var aggr = "";
+			var options = this.columnOptions[columnName];
+			var columnValues = this.collection.pluck(columnName);
+			switch (options.method) {
+			case 'sum':
+				aggr = _.reduce(columnValues, function (memo, num) {
+					return memo + parseFloat(num);
+				}, 0);
+				break;
+			case 'mean':
+			case 'avg':
+				aggr = _.reduce(columnValues, function (memo, num) {
+					return memo + parseFloat(num);
+				}, 0);
+				aggr /= columnValues.length;
+				break;
+			default:
+				if (_.isFunction(options.method)) {
+					aggr = options.method(this.collection);
+				}
+				break;
+			}
+			if (_.isNumber(aggr)) {
+				aggr = Math.round(aggr * 100) / 100;
+			}
+			return aggr;
+		}
+	});
 
-    getSumCell: function () {
-      var _this = this;
-      return new (
-        Backgrid.Cell.extend({
-          className: _this.className || '',
-          initialize: function () { },
-          render: function () {
-            this.$el.html(new _this.formatter().fromRaw(_this.getSum(), _this.model));
-            return this;
-          }
-        })
-      )();
-    }
-  });
-
-  var SummedColumnBody = window.Backgrid.SummedColumnBody = window.Backgrid.Body.extend({
-    formatter: Backgrid.StringFormatter,
-    template: _.template('<td class="<%= className %>"><%= sum %></td>'),
-	prepend: false,
-
-    initialize: function () {
-      Backgrid.Body.prototype.initialize.apply(this, arguments);
-      this.listenTo(this.collection, 'change add remove reset', this.render);
-      this.listenTo(this.columns, 'change add remove reset', this.render);
-    },
-
-    render: function () {
-      window.Backgrid.Body.prototype.render.apply(this, arguments);
-	  if (this.prepend) {
-		  this.$el.prepend(this.getSumRow().render().el);
-	  } else {
-		  this.el.appendChild(this.getSumRow().render().el);
-	  }
-      return this;
-    },
-
-    getFormatterForColumn: function (column) {
-      if (this.formatters && this.formatters[column.get('name')]) {
-        return new this.formatters[column.get('name')]();
-      } else {
-        return new window.Backgrid.StringFormatter();
-      }
-    },
-
-    getSumRow: function () {
-      var _this = this;
-      return new (
-        Backbone.View.extend({
-          className: _this.className || '',
-          tagName: 'tr',
-          render: function () {
-            _this.columns.forEach(_.bind(function (column) {
-              var sum = '';
-              if (_this.columnsToSum.indexOf(column.get('name')) !== -1) {
-                var values = _this.collection.pluck(column.get('name'));
-                sum = _.reduce(values, function (memo, num) {
-                  return memo + parseFloat(num);
-                }, 0);
-                sum = _this.getFormatterForColumn(column).fromRaw(sum, _this.model);
-              }
-              this.$el.append(_this.template({ className: _this.className, sum: sum }));
-            }, this));
-
-            return this;
-          }
-        })
-      )();
-    }
-  });
-
-  _(SummedRow.prototype).extend(SummationUtility);
-  _(SummedColumnBody.prototype).extend(SummationUtility);
 })(window);
